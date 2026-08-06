@@ -167,15 +167,15 @@ export default function TrustSection() {
               </div>
 
               <p className="text-xl font-bold text-brand-blue uppercase tracking-widest leading-snug text-left">
-                {trust?.provider?.line1 || "Registered"}
+                {trust?.provider.line1}
 
                 <br />
 
-                {trust?.provider?.line2 || "NDIS"}
+                {trust?.provider.line2}
 
                 <br />
 
-                {trust?.provider?.line3 || "Provider"}
+                {trust?.provider.line3}
               </p>
             </div>
           </motion.div>
