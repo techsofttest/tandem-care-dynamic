@@ -366,12 +366,12 @@ export default function Footer({ services, contact }: FooterProps) {
         </div>
 
         {/* Copyright */}
-        <div className="mt-12 pt-8 border-t border-white/10 text-xs opacity-60 flex justify-between">
+        <div className="mt-12 pt-8 border-t border-white/10 text-xs opacity-60 flex justify-center items-center gap-4">
           <p>&copy; {currentYear} Tandem Care. All rights reserved.</p>
-          <div className="flex gap-6">
+          {/* <div className="flex gap-6">
             <Link href="#">Terms & Conditions</Link>
             <Link href="#">Privacy Policy</Link>
-          </div>
+          </div> */}
         </div>
       </div>
     </footer>

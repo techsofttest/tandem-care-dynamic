@@ -183,7 +183,7 @@ export default function CtaSection() {
           <Button
             href="/referral"
             variant="secondary"
-            className="group flex items-center justify-center px-8 py-4 rounded-full font-bold text-lg border border-brand-blue text-brand-blue hover:bg-brand-blue hover:text-white transition-all duration-300 hover:-translate-y-1"
+            className="group flex items-center justify-center px-8 py-4 rounded-full font-bold text-lg border border-brand-blue text-brand-blue hover:border-brand-blue hover:text-brand-blue transition-all duration-300 hover:-translate-y-1"
           >
             Make a Referral
             <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
