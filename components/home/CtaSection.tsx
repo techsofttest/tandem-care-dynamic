@@ -146,8 +146,9 @@ export default function CtaSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, ease: "easeOut" }}
-            className={`flex flex-col items-center text-center max-w-4xl mx-auto ${index === 1 ? "mt-20" : ""
-              }`}
+            className={`flex flex-col items-center text-center max-w-4xl mx-auto ${
+              index === 1 ? "mt-20" : ""
+            }`}
           >
             <h2 className="text-4xl lg:text-6xl font-heading font-bold text-slate-900 mb-6 leading-tight">
               {section.heading.line1}{" "}
@@ -181,7 +182,7 @@ export default function CtaSection() {
           </Button>
 
           <Button
-            href="/referral"
+            href="/referrals"
             variant="secondary"
             className="group flex items-center justify-center px-8 py-4 rounded-full font-bold text-lg border border-brand-blue text-brand-blue hover:border-brand-blue hover:text-brand-blue transition-all duration-300 hover:-translate-y-1"
           >
