@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+@theme {
+  /* Typography */
+  --font-sans: var(--font-inter), sans-serif;
+  --font-heading: var(--font-nunito), sans-serif;
+
+  /* Brand Colors from Logo */
+  --color-brand-blue: #3592CF;
+  --color-brand-orange: #FCB040;
+
+  /* Action & Accent Colors */
+  --color-accent: #059669;
+  /* Accessible Emerald for CTAs */
+  --color-accent-hover: #047857;
+
+  /* Custom Breakpoints */
+  --breakpoint-nav: 1210px;
+
+  /* Structural Colors */
+  --color-background: #ffffff;
+  --color-surface: #f8fafc;
+  /* Very light slate for section backgrounds */
+  --color-foreground: #0f172a;
+  /* Slate 900 for main text */
+  --color-muted: #64748b;
+  /* Slate 500 for secondary text */
+  --color-border: #e2e8f0;
+  /* Slate 200 for form borders */
+}
+
+/* Base HTML/Body adjustments */
+:root {
+  --background: #ffffff;
+  --foreground: #0f172a;
+}
+
+@media (prefers-color-scheme: dark) {
+
+  /* Note: For healthcare sites, a forced light theme is often preferred 
+     for readability, but if you must support dark mode, invert the surface 
+     and text colors here. The brand colors may need tweaking for contrast. */
+  :root {
+    --background: #0f172a;
+    --foreground: #f8fafc;
+  }
+}
+
+@layer base {
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+
+  /* Enforce the heading font across standard HTML tags */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--foreground);
+  }
+
+  /* Base Form Reset for better UX */
+  input,
+  textarea,
+  select {
+    border: 1px solid var(--color-border);
+    background-color: var(--background);
+    border-radius: 0.5rem;
+    /* rounded-lg */
+    color: var(--foreground);
+  }
+
+  input:focus,
+  textarea:focus,
+  select:focus {
+    outline: 2px solid var(--color-brand-blue);
+    outline-offset: 2px;
+  }
+}
