@@ -4,7 +4,6 @@ import "./globals.css";
 
 import Header from "@/components/global/Header";
 import Footer from "@/components/global/Footer";
-import Chatbot from "@/components/global/Chatbot";
 import { getServices } from "@/app/lib/services";
 import { getContact } from "@/app/lib/contact";
 
@@ -40,7 +39,6 @@ export default async function RootLayout({
 
         {children}
 
-        <Chatbot />
         <Footer services={services} contact={contactData?.contact ?? null} />
       </body>
     </html>
