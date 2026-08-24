@@ -416,7 +416,7 @@ function ReferralsPageContent({ bannerData, services }: ReferralsClientProps) {
                           </span>
                           <div className="mt-2 flex flex-col sm:flex-row sm:gap-6">
                             <span>
-                              <strong>Ph.</strong>{" "}
+                              <strong>Ph.N/A</strong>{" "}
                               <a
                                 href="tel:"
                                 className="text-brand-blue font-semibold hover:underline"
