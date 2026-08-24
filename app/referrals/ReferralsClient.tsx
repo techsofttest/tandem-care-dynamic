@@ -418,11 +418,9 @@ function ReferralsPageContent({ bannerData, services }: ReferralsClientProps) {
                             <span>
                               <strong>Ph.</strong>{" "}
                               <a
-                                href="tel:0892423276"
+                                href="tel:"
                                 className="text-brand-blue font-semibold hover:underline"
-                              >
-                                08 9242 3276
-                              </a>
+                              ></a>
                             </span>
                             <span>
                               <strong>Email:</strong>{" "}
