@@ -152,9 +152,7 @@ export default function Footer({ services, contact }: FooterProps) {
 
       <div className="container mx-auto px-6 lg:px-20 max-w-[90rem] relative z-10">
         {/* Top Section: Branding, Contact & Navigation */}
-
-        {/* Top Section: Branding, Contact & Navigation */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12 mb-16">
           {/* Brand & Contact */}
           <div className="lg:col-span-4 space-y-8">
             <div className="relative h-16 w-48">
@@ -202,10 +200,10 @@ export default function Footer({ services, contact }: FooterProps) {
             </div>
           </div>
 
-          {/* Navigation Columns */}
-          <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-8">
-            {/* Support & Services */}
-            <div className="space-y-6">
+          {/* Navigation Columns - Updated Grid Ratios */}
+          <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-12 gap-8">
+            {/* Support & Services (Takes 7 cols on sm+) */}
+            <div className="sm:col-span-7 space-y-6">
               <h5 className="font-bold uppercase tracking-wider text-sm mb-4">
                 Support & Services
               </h5>
@@ -234,8 +232,8 @@ export default function Footer({ services, contact }: FooterProps) {
               )}
             </div>
 
-            {/* Company Links */}
-            <div className="space-y-6">
+            {/* Company Links (Takes 5 cols on sm+) */}
+            <div className="sm:col-span-5 space-y-6">
               <h5 className="font-bold uppercase tracking-wider text-sm mb-4">
                 Company
               </h5>
