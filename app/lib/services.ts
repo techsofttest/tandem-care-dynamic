@@ -9,7 +9,7 @@ export interface Service {
 export async function getServices(): Promise<Service[]> {
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/home-service`,
+      `${process.env.NEXT_PUBLIC_API_URL}/our-services`,
       {
         cache: "no-store",
       },

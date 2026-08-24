@@ -2,16 +2,7 @@
 
 import { useState, FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  User,
-  Mail,
-  Phone,
-  AlertCircle,
-  Info,
-  Send,
-  CheckCircle2,
-  Clock,
-} from "lucide-react";
+import { User, Mail, Phone, Send, CheckCircle2, Clock } from "lucide-react";
 import PageBanner from "@/components/global/PageBanner";
 import Button from "@/components/ui/Button";
 import { FormInput } from "@/components/ui/FormInput";
@@ -25,17 +16,9 @@ interface BannerData {
 
 interface ContactData {
   id: number;
-  // address: string;
-  // map_link: string;
   phone: string;
   email: string;
-  // whatsapp: string;
   opening_hours: string;
-  // facebook: string;
-  // twitter: string;
-  // instagram: string;
-  // linkedin: string;
-  // youtube: string;
 }
 
 interface ContactClientProps {
@@ -64,9 +47,11 @@ export default function ContactClient({
   contactData,
 }: ContactClientProps) {
   const [formData, setFormData] = useState<FormData>(INITIAL_FORM_STATE);
+
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>(
     {},
   );
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
@@ -74,16 +59,26 @@ export default function ContactClient({
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
     if (errors[name as keyof FormData]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
+      setErrors((prev) => ({
+        ...prev,
+        [name]: "",
+      }));
     }
   };
 
   const validateForm = (): boolean => {
     const newErrors: Partial<Record<keyof FormData, string>> = {};
 
-    if (!formData.name.trim()) newErrors.name = "Full name is required";
+    if (!formData.name.trim()) {
+      newErrors.name = "Full name is required";
+    }
 
     if (!formData.email.trim()) {
       newErrors.email = "Email address is required";
@@ -93,26 +88,48 @@ export default function ContactClient({
 
     if (!formData.phone.trim()) {
       newErrors.phone = "Phone number is required";
-    } else if (!/^\+?[0-9\s\-()]{8,16}$/.test(formData.phone.trim())) {
+    } else if (/^\+?[0-9\s\-()]{8,16}$/.test(formData.phone.trim()) === false) {
       newErrors.phone = "Please enter a valid phone number";
     }
 
-    if (!formData.subject.trim()) newErrors.subject = "Subject is required";
-    if (!formData.message.trim())
+    if (!formData.subject.trim()) {
+      newErrors.subject = "Subject is required";
+    }
+
+    if (!formData.message.trim()) {
       newErrors.message = "Message details are required";
+    }
 
     setErrors(newErrors);
+
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!validateForm()) {
       return;
     }
 
+    // Store the form reference before the async operation
+    const form = e.currentTarget;
+
     setIsSubmitting(true);
+    setErrors({});
+
+    // Prepare the API payload
+    const payload = {
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      subject: formData.subject,
+      message: formData.message,
+    };
+
+    // Check exactly what is being sent
+    console.log("Form Data:", formData);
+    console.log("API Payload:", payload);
 
     try {
       const response = await fetch(
@@ -123,24 +140,34 @@ export default function ContactClient({
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(payload),
         },
       );
 
       const result = await response.json();
 
-      if (!response.ok) {
+      console.log("API Status:", response.status);
+      console.log("API Response:", result);
+
+      if (!response.ok || !result.success) {
         throw new Error(result.message || "Something went wrong.");
       }
 
-      setIsSubmitted(true);
+      // Reset actual HTML form
+      form.reset();
+
+      // Reset React state
       setFormData(INITIAL_FORM_STATE);
+      setErrors({});
+      setIsSubmitted(true);
+
       window.scrollTo({
         top: 0,
         behavior: "smooth",
       });
     } catch (error) {
-      console.error(error);
+      console.error("Contact Form Error:", error);
+
       alert("Unable to send enquiry. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -165,7 +192,9 @@ export default function ContactClient({
       <section className="w-full py-16 md:py-24 relative z-10">
         {/* Background Pattern & Glow Shapes */}
         <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-40 pointer-events-none z-0" />
+
         <div className="absolute top-1/4 -left-20 w-80 h-80 bg-[#3592CF]/5 rounded-full blur-3xl pointer-events-none z-0" />
+
         <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-[#FCB040]/5 rounded-full blur-3xl pointer-events-none z-0" />
 
         <div className="container mx-auto px-6 lg:px-20 max-w-[90rem] relative z-10">
@@ -176,6 +205,7 @@ export default function ContactClient({
                 <h2 className="text-3xl md:text-4xl font-heading font-bold text-slate-900 mb-4">
                   Get in Touch
                 </h2>
+
                 <p className="text-slate-600 leading-relaxed">
                   Have questions about our services, support workers, or NDIS
                   plans? Our team is here to provide the support and answers you
@@ -184,18 +214,21 @@ export default function ContactClient({
               </div>
 
               <div className="space-y-6">
-                {/* Contact Card: Phone */}
+                {/* Phone */}
                 <div className="flex gap-4 p-6 bg-white border border-slate-200 rounded-3xl hover:border-brand-blue/30 transition-all duration-300">
                   <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-brand-blue/5 text-brand-blue shrink-0">
                     <Phone className="w-6 h-6" />
                   </div>
+
                   <div>
                     <h3 className="font-bold text-slate-900 text-lg mb-1">
                       Phone Support
                     </h3>
+
                     <p className="text-sm text-slate-500 mb-2">
                       Speak directly with our Services Management Team.
                     </p>
+
                     <a
                       href={`tel:${contactData.phone}`}
                       className="text-brand-blue font-bold hover:underline"
@@ -205,18 +238,21 @@ export default function ContactClient({
                   </div>
                 </div>
 
-                {/* Contact Card: Email */}
+                {/* Email */}
                 <div className="flex gap-4 p-6 bg-white border border-slate-200 rounded-3xl hover:border-brand-blue/30 transition-all duration-300">
                   <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-brand-blue/5 text-brand-blue shrink-0">
                     <Mail className="w-6 h-6" />
                   </div>
+
                   <div>
                     <h3 className="font-bold text-slate-900 text-lg mb-1">
                       Email Inquiry
                     </h3>
+
                     <p className="text-sm text-slate-500 mb-2">
                       Drop us a line and we will reply within 24 hours.
                     </p>
+
                     <a
                       href={`mailto:${contactData.email}`}
                       className="text-brand-blue font-bold hover:underline"
@@ -226,13 +262,15 @@ export default function ContactClient({
                   </div>
                 </div>
 
-                {/* Additional Info Callout */}
+                {/* Opening Hours */}
                 <div className="flex gap-4 p-5 bg-brand-blue/5 rounded-3xl border border-brand-blue/10 text-slate-700 text-sm">
                   <Clock className="w-5 h-5 text-brand-blue shrink-0 mt-0.5" />
+
                   <div>
                     <span className="font-bold text-slate-800">
                       Operating Hours
                     </span>
+
                     <p className="mt-1 text-slate-600">
                       {contactData.opening_hours}
                     </p>
@@ -256,6 +294,7 @@ export default function ContactClient({
                     <h3 className="text-2xl font-heading font-bold text-slate-900 mb-2">
                       Send us a Message
                     </h3>
+
                     <p className="text-slate-500 text-sm mb-6">
                       If you have any general enquiries, questions, or would
                       like more information, feel free to fill out the form
@@ -370,12 +409,14 @@ export default function ContactClient({
                                   stroke="currentColor"
                                   strokeWidth="4"
                                 />
+
                                 <path
                                   className="opacity-75"
                                   fill="currentColor"
                                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                                 />
                               </svg>
+
                               <span>Submitting...</span>
                             </>
                           ) : (
@@ -399,9 +440,11 @@ export default function ContactClient({
                     <div className="inline-flex items-center justify-center w-20 h-20 bg-emerald-50 rounded-full text-emerald-500 mb-6">
                       <CheckCircle2 className="w-12 h-12 stroke-[1.5]" />
                     </div>
+
                     <h2 className="text-3xl font-heading font-bold text-slate-900 mb-4">
                       Message Sent!
                     </h2>
+
                     <p className="text-slate-600 leading-relaxed mb-8">
                       Thank you for getting in touch. Your message has been
                       successfully received. Our team will review your enquiry
@@ -416,6 +459,7 @@ export default function ContactClient({
                       >
                         Send Another Message
                       </Button>
+
                       <Button
                         href="/"
                         variant="primary"

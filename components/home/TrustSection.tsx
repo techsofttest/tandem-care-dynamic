@@ -16,7 +16,6 @@ interface TrustData {
   heading: {
     line1: string;
     line2: string;
-    suffix: string;
   };
 
   trust_desc: string[];
@@ -141,7 +140,6 @@ export default function TrustSection() {
 
                   <span className="text-brand-blue">
                     {trust.heading?.line2}
-                    {trust.heading?.suffix}
                   </span>
                 </>
               )}

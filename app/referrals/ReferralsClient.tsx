@@ -1,23 +1,32 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, Suspense, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   User,
   Mail,
   Phone,
-  Home,
   Check,
-  ChevronDown,
   AlertCircle,
   Info,
   MapPin,
-  Calendar,
   Send,
   CheckCircle2,
+  Calendar,
+  Stethoscope,
+  Activity,
+  Car,
 } from "lucide-react";
 import PageBanner from "@/components/global/PageBanner";
 import Button from "@/components/ui/Button";
+import type { Service } from "@/app/lib/services";
+
+/*
+|--------------------------------------------------------------------------
+| Banner Data
+|--------------------------------------------------------------------------
+*/
 
 interface BannerData {
   id: number;
@@ -25,9 +34,18 @@ interface BannerData {
   subtitle: string;
 }
 
+interface ReferralsClientProps {
+  bannerData: BannerData;
+  services: Service[];
+}
+
 interface FormData {
-  firstName: string;
-  lastName: string;
+  participantName: string;
+  dobOrAge: string;
+  gender: string;
+  location: string;
+  disabilityType: string;
+  medicalCondition: string;
   email: string;
   phone: string;
   role: string;
@@ -36,28 +54,20 @@ interface FormData {
   fundingSource: string;
   otherFundingSource: string;
   servicesNeeded: string[];
-  preferredAreas: string[];
-  interestedInTour: string;
+  wheelchairVehicleRequired: string;
+  sdaCategory: string;
   source: string;
   otherSource: string;
   comments: string;
 }
 
-interface SilEnquiryClientProps {
-  bannerData: BannerData;
-  services: ServiceOption[];
-}
-
-interface ServiceOption {
-  id: number;
-  title: string;
-  slug: string;
-  description: string;
-}
-
 const INITIAL_FORM_STATE: FormData = {
-  firstName: "",
-  lastName: "",
+  participantName: "",
+  dobOrAge: "",
+  gender: "",
+  location: "",
+  disabilityType: "",
+  medicalCondition: "",
   email: "",
   phone: "",
   role: "",
@@ -66,23 +76,50 @@ const INITIAL_FORM_STATE: FormData = {
   fundingSource: "",
   otherFundingSource: "",
   servicesNeeded: [],
-  preferredAreas: [],
-  interestedInTour: "",
+  wheelchairVehicleRequired: "",
+  sdaCategory: "",
   source: "",
   otherSource: "",
   comments: "",
 };
 
-export default function Sil_EnquiryClient({
-  bannerData,
-  services,
-}: SilEnquiryClientProps) {
+function ReferralsPageContent({ bannerData, services }: ReferralsClientProps) {
   const [formData, setFormData] = useState<FormData>(INITIAL_FORM_STATE);
+
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>(
     {},
   );
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const roleParam = searchParams.get("role");
+    const serviceParam = searchParams.get("service");
+
+    if (roleParam || serviceParam) {
+      setFormData((prev) => {
+        const updated = { ...prev };
+        if (roleParam) {
+          updated.role = roleParam;
+          // Auto-select referredPerson based on role
+          if (roleParam === "Person with disability") {
+            updated.referredPerson = "Myself";
+          } else if (roleParam === "Family member") {
+            updated.referredPerson = "My relative";
+          } else if (roleParam === "Support Coordinator") {
+            updated.referredPerson = "A client / participant";
+          }
+        }
+        if (serviceParam) {
+          updated.servicesNeeded = [serviceParam];
+        }
+        return updated;
+      });
+    }
+  }, [searchParams]);
 
   // Options
   const roleOptions = [
@@ -108,44 +145,38 @@ export default function Sil_EnquiryClient({
   ];
 
   const fundingSourceOptions = [
-    "NDIS",
-    "DSOA",
-    "ICWA",
-    "Department of Child Protection",
+    "National Disability Insurance Scheme (NDIS)",
+    "Disability Support for Older Australians (DSOA)",
+    "Insurance Commission of Western Australia (ICWA)",
+    "iCare",
+    "Funds in Court",
+    "Department of Child Protection (DCP)",
     "Department of Communities",
+    "Private Funding",
     "Unsure",
     "Other funding source",
   ];
 
-  const areaOptions = [
-    { label: "North Perth", value: "North" },
-    { label: "East Perth", value: "East" },
-    { label: "South Perth", value: "South" },
-    {
-      label: "Anywhere in Perth metro area",
-      value: "Anywhere in Perth metro area",
-    },
+  const sdaCategoryOptions = [
+    "Improved Liveability",
+    "Robust",
+    "Fully Accessible",
+    "High Physical Support",
   ];
 
-  const tourOptions = [
-    {
-      label: "Yes, I want to be invited to the next Affinity Care WA Home Open",
-      value: "Yes, I want to be invited to the next Affinity Care WA Home Open",
-    },
-    {
-      label: "No, I already know the benefits of SDA housing",
-      value: "No, I already know the benefits of SDA housing",
-    },
+  const wheelchairOptions = [
+    { label: "Yes", value: "Yes" },
+    { label: "No", value: "No" },
   ];
 
   const sourceOptions = [
-    "Social media",
+    "Social Media",
     "Google",
-    "Support Coordinator / Plan Manager",
+    "Support Coordinator/Plan Manager",
     "Word of Mouth",
-    "Email from Affinity Care WA",
-    "Post / mail",
-    "Event / Expo",
+    "Email from The Star Care Group",
+    "Post/Mail",
+    "Events/Expo",
     "Radio",
     "Other",
   ];
@@ -170,17 +201,13 @@ export default function Sil_EnquiryClient({
     }
   };
 
-  const handleCheckboxToggle = (
-    field: "servicesNeeded" | "preferredAreas",
-    value: string,
-  ) => {
+  const handleCheckboxToggle = (field: "servicesNeeded", value: string) => {
     setFormData((prev) => {
       const currentList = prev[field] as string[];
       const newList = currentList.includes(value)
         ? currentList.filter((item) => item !== value)
         : [...currentList, value];
 
-      // Clear error if selection is made
       if (errors[field]) {
         setErrors((e) => ({ ...e, [field]: "" }));
       }
@@ -189,24 +216,21 @@ export default function Sil_EnquiryClient({
     });
   };
 
-  const resetForm = () => {
-    setFormData(INITIAL_FORM_STATE);
-    setErrors({});
-    setIsSubmitted(false);
-    setIsSubmitting(false);
-
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  };
-
   const validateForm = (): boolean => {
     const newErrors: Partial<Record<keyof FormData, string>> = {};
 
-    if (!formData.firstName.trim())
-      newErrors.firstName = "First name is required";
-    if (!formData.lastName.trim()) newErrors.lastName = "Last name is required";
+    if (!formData.participantName.trim())
+      newErrors.participantName = "Participant name is required";
+    if (!formData.dobOrAge.trim())
+      newErrors.dobOrAge = "Participant date of birth or age is required";
+    if (!formData.gender.trim())
+      newErrors.gender = "Participant gender is required";
+    if (!formData.location.trim())
+      newErrors.location = "Participant location/suburb is required";
+    if (!formData.disabilityType.trim())
+      newErrors.disabilityType = "Disability type is required";
+    if (!formData.medicalCondition.trim())
+      newErrors.medicalCondition = "Medical condition is required";
 
     if (!formData.email.trim()) {
       newErrors.email = "Email address is required";
@@ -224,9 +248,9 @@ export default function Sil_EnquiryClient({
     if (!formData.referredPerson)
       newErrors.referredPerson = "Please select who you are referring";
     if (!formData.hasNdisPlan)
-      newErrors.hasNdisPlan = "Please select your NDIS plan status";
+      newErrors.hasNdisPlan = "Please select NDIS plan status";
     if (!formData.fundingSource)
-      newErrors.fundingSource = "Please select your funding source";
+      newErrors.fundingSource = "Please select a funding source";
     if (
       formData.fundingSource === "Other funding source" &&
       !formData.otherFundingSource.trim()
@@ -235,11 +259,6 @@ export default function Sil_EnquiryClient({
     }
     if (formData.servicesNeeded.length === 0)
       newErrors.servicesNeeded = "Please select at least one service option";
-    if (formData.preferredAreas.length === 0)
-      newErrors.preferredAreas = "Please select at least one preferred area";
-    if (!formData.interestedInTour)
-      newErrors.interestedInTour =
-        "Please choose an option regarding SDA tours";
     if (!formData.source)
       newErrors.source = "Please select how you heard about us";
     if (formData.source === "Other" && !formData.otherSource.trim()) {
@@ -250,10 +269,31 @@ export default function Sil_EnquiryClient({
     return Object.keys(newErrors).length === 0;
   };
 
+  const resetForm = () => {
+    setFormData(INITIAL_FORM_STATE);
+    setErrors({});
+    setIsSubmitted(false);
+    setIsSubmitting(false);
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
+    // Display form data immediately when Submit is clicked
+    console.log("========== REFERRAL FORM SUBMIT ==========");
+    console.log("Form Data:", formData);
+    console.log("Form JSON:", JSON.stringify(formData, null, 2));
+
+    // Validate after logging
     if (!validateForm()) {
+      console.log("❌ Form validation failed");
+      console.log("Validation Errors:", errors);
+
       const firstErrorEl = document.querySelector(".form-error-msg");
 
       if (firstErrorEl) {
@@ -266,73 +306,52 @@ export default function Sil_EnquiryClient({
       return;
     }
 
+    console.log("✅ Form validation passed");
+
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/sil-enquiry`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify(formData),
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+      console.log("API URL:", `${apiUrl}/referral`);
+
+      // Data that will actually be sent to Laravel
+      console.log("========== DATA SENT TO LARAVEL ==========");
+      console.log("Referral Form Data:", formData);
+      console.log("Referral Form JSON:", JSON.stringify(formData, null, 2));
+
+      const response = await fetch(`${apiUrl}/referral`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
-      );
+        body: JSON.stringify(formData),
+      });
 
       const result = await response.json();
 
+      console.log("========== LARAVEL RESPONSE ==========");
+      console.log("Status:", response.status);
+      console.log("Response:", result);
+
       if (!response.ok) {
         if (result.errors) {
-          const backendErrors: Partial<Record<keyof FormData, string>> = {};
+          const apiErrors: Partial<Record<keyof FormData, string>> = {};
 
           Object.entries(result.errors).forEach(([key, value]) => {
-            const formKeyMap: Record<string, keyof FormData> = {
-              firstName: "firstName",
-              lastName: "lastName",
-              email: "email",
-              phone: "phone",
-              role: "role",
-              referredPerson: "referredPerson",
-              hasNdisPlan: "hasNdisPlan",
-              fundingSource: "fundingSource",
-              otherFundingSource: "otherFundingSource",
-              servicesNeeded: "servicesNeeded",
-              preferredAreas: "preferredAreas",
-              interestedInTour: "interestedInTour",
-              source: "source",
-              otherSource: "otherSource",
-              comments: "comments",
-            };
-
-            const formKey = formKeyMap[key];
-
-            if (formKey) {
-              backendErrors[formKey] = Array.isArray(value)
-                ? value[0]
-                : String(value);
+            if (Array.isArray(value)) {
+              apiErrors[key as keyof FormData] = value[0] as string;
             }
           });
 
-          setErrors(backendErrors);
-
-          setTimeout(() => {
-            const firstErrorEl = document.querySelector(".form-error-msg");
-
-            if (firstErrorEl) {
-              firstErrorEl.scrollIntoView({
-                behavior: "smooth",
-                block: "center",
-              });
-            }
-          }, 100);
-        } else {
-          alert(result.message || "Something went wrong.");
+          setErrors(apiErrors);
         }
 
-        return;
+        throw new Error(result.message || "Failed to submit referral.");
       }
+
+      console.log("✅ Referral submitted successfully:", result);
 
       setIsSubmitted(true);
 
@@ -341,9 +360,13 @@ export default function Sil_EnquiryClient({
         behavior: "smooth",
       });
     } catch (error) {
-      console.error("SIL enquiry submission error:", error);
+      console.error("❌ Referral submission error:", error);
 
-      alert("Unable to submit your enquiry. Please try again later.");
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong while submitting the referral.",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -352,6 +375,7 @@ export default function Sil_EnquiryClient({
   return (
     <div className="flex flex-col min-h-screen bg-slate-50/50">
       {/* Header Banner */}
+
       <PageBanner
         title={bannerData.title}
         subtitle={bannerData.subtitle}
@@ -364,7 +388,7 @@ export default function Sil_EnquiryClient({
             <AnimatePresence mode="wait">
               {!isSubmitted ? (
                 <motion.div
-                  key="enquiry-form"
+                  key="referral-form"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
@@ -374,13 +398,12 @@ export default function Sil_EnquiryClient({
                   {/* Introduction Details */}
                   <div className="mb-10 pb-8 border-b border-slate-100">
                     <h2 className="text-2xl md:text-3xl font-heading font-bold text-slate-900 mb-4">
-                      Supported Independent Living (SIL) Enquiry
+                      Referral Form
                     </h2>
                     <p className="text-slate-600 leading-relaxed mb-6">
-                      Complete this form if you are interested in NDIS Supported
-                      Independent Living (SIL). Our dedicated accommodation team
-                      will review your requirements and get in touch with you
-                      shortly.
+                      Complete this form if you would like to use The Star Care
+                      Group’s services. Our Services Management Team will review
+                      your requirements and respond shortly.
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-4 p-5 bg-brand-blue/5 rounded-2xl border border-brand-blue/15 text-slate-700 text-sm">
@@ -388,24 +411,29 @@ export default function Sil_EnquiryClient({
                         <Info className="w-5 h-5 text-brand-blue shrink-0 mt-0.5" />
                         <div>
                           <span className="font-bold text-slate-800">
-                            Need help?{" "}
+                            For more information, contact our Services
+                            Management Team on:
                           </span>
-                          For more information, contact our Participant
-                          Engagement Department on{" "}
-                          <a
-                            href="mailto:enquire@affinitycarewa.com.au"
-                            className="text-brand-blue font-semibold hover:underline"
-                          >
-                            enquire@affinitycarewa.com.au
-                          </a>{" "}
-                          or call{" "}
-                          <a
-                            href="tel:+61434693751"
-                            className="text-brand-blue font-semibold hover:underline"
-                          >
-                            +61 434 693 751
-                          </a>
-                          .
+                          <div className="mt-2 flex flex-col sm:flex-row sm:gap-6">
+                            <span>
+                              <strong>Ph.</strong>{" "}
+                              <a
+                                href="tel:0892423276"
+                                className="text-brand-blue font-semibold hover:underline"
+                              >
+                                08 9242 3276
+                              </a>
+                            </span>
+                            <span>
+                              <strong>Email:</strong>{" "}
+                              <a
+                                href="mailto:info@tandemcare.com.au"
+                                className="text-brand-blue font-semibold hover:underline"
+                              >
+                                info@tandemcare.com.au
+                              </a>
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -417,77 +445,222 @@ export default function Sil_EnquiryClient({
                     className="space-y-10"
                     noValidate
                   >
-                    {/* SECTION 1: Personal Details */}
+                    {/* SECTION 1: Participant Information */}
                     <div className="space-y-6">
                       <h3 className="text-lg font-heading font-bold text-slate-900 flex items-center gap-2">
-                        <span>1. Contact Details</span>
+                        <span>1. Participant Information</span>
                       </h3>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* First Name */}
+                        {/* Participant Name */}
                         <div>
                           <label
-                            htmlFor="firstName"
+                            htmlFor="participantName"
                             className="block text-sm font-semibold text-slate-800 mb-2"
                           >
-                            First Name <span className="text-red-500">*</span>
+                            Participant Name{" "}
+                            <span className="text-red-500">*</span>
                           </label>
                           <div className="relative">
                             <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 pointer-events-none" />
                             <input
-                              id="firstName"
+                              id="participantName"
                               type="text"
-                              name="firstName"
-                              value={formData.firstName}
+                              name="participantName"
+                              value={formData.participantName}
                               onChange={handleInputChange}
-                              placeholder="John"
+                              placeholder="Full Name"
                               className={`w-full pl-12 pr-4 py-3 rounded-xl border ${
-                                errors.firstName
+                                errors.participantName
                                   ? "border-red-400 focus:outline-red-400"
                                   : "border-slate-400 focus:outline-brand-blue"
                               } bg-slate-50/30 text-slate-900 transition-colors`}
                             />
                           </div>
-                          {errors.firstName && (
+                          {errors.participantName && (
                             <span className="form-error-msg text-xs text-red-500 mt-1.5 flex items-center gap-1 font-medium">
                               <AlertCircle className="w-3.5 h-3.5" />{" "}
-                              {errors.firstName}
+                              {errors.participantName}
                             </span>
                           )}
                         </div>
 
-                        {/* Last Name */}
+                        {/* DOB / Age */}
                         <div>
                           <label
-                            htmlFor="lastName"
+                            htmlFor="dobOrAge"
                             className="block text-sm font-semibold text-slate-800 mb-2"
                           >
-                            Last Name <span className="text-red-500">*</span>
+                            Participant's Date of Birth or Age{" "}
+                            <span className="text-red-500">*</span>
                           </label>
                           <div className="relative">
-                            <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 pointer-events-none" />
+                            <Calendar className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 pointer-events-none" />
                             <input
-                              id="lastName"
+                              id="dobOrAge"
                               type="text"
-                              name="lastName"
-                              value={formData.lastName}
+                              name="dobOrAge"
+                              value={formData.dobOrAge}
                               onChange={handleInputChange}
-                              placeholder="Doe"
+                              placeholder="DD/MM/YYYY or Age"
                               className={`w-full pl-12 pr-4 py-3 rounded-xl border ${
-                                errors.lastName
+                                errors.dobOrAge
                                   ? "border-red-400 focus:outline-red-400"
                                   : "border-slate-400 focus:outline-brand-blue"
                               } bg-slate-50/30 text-slate-900 transition-colors`}
                             />
                           </div>
-                          {errors.lastName && (
+                          {errors.dobOrAge && (
                             <span className="form-error-msg text-xs text-red-500 mt-1.5 flex items-center gap-1 font-medium">
                               <AlertCircle className="w-3.5 h-3.5" />{" "}
-                              {errors.lastName}
+                              {errors.dobOrAge}
                             </span>
                           )}
                         </div>
                       </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Gender */}
+                        <div>
+                          <label
+                            htmlFor="gender"
+                            className="block text-sm font-semibold text-slate-800 mb-2"
+                          >
+                            Participant Gender{" "}
+                            <span className="text-red-500">*</span>
+                          </label>
+                          <div className="relative">
+                            <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 pointer-events-none" />
+                            <input
+                              id="gender"
+                              type="text"
+                              name="gender"
+                              value={formData.gender}
+                              onChange={handleInputChange}
+                              placeholder="e.g. Male, Female, Non-binary"
+                              className={`w-full pl-12 pr-4 py-3 rounded-xl border ${
+                                errors.gender
+                                  ? "border-red-400 focus:outline-red-400"
+                                  : "border-slate-400 focus:outline-brand-blue"
+                              } bg-slate-50/30 text-slate-900 transition-colors`}
+                            />
+                          </div>
+                          {errors.gender && (
+                            <span className="form-error-msg text-xs text-red-500 mt-1.5 flex items-center gap-1 font-medium">
+                              <AlertCircle className="w-3.5 h-3.5" />{" "}
+                              {errors.gender}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Location / Suburb */}
+                        <div>
+                          <label
+                            htmlFor="location"
+                            className="block text-sm font-semibold text-slate-800 mb-2"
+                          >
+                            Participant's Suburb/Location{" "}
+                            <span className="text-red-500">*</span>
+                          </label>
+                          <div className="relative">
+                            <MapPin className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 pointer-events-none" />
+                            <input
+                              id="location"
+                              type="text"
+                              name="location"
+                              value={formData.location}
+                              onChange={handleInputChange}
+                              placeholder="Suburb / Location"
+                              className={`w-full pl-12 pr-4 py-3 rounded-xl border ${
+                                errors.location
+                                  ? "border-red-400 focus:outline-red-400"
+                                  : "border-slate-400 focus:outline-brand-blue"
+                              } bg-slate-50/30 text-slate-900 transition-colors`}
+                            />
+                          </div>
+                          {errors.location && (
+                            <span className="form-error-msg text-xs text-red-500 mt-1.5 flex items-center gap-1 font-medium">
+                              <AlertCircle className="w-3.5 h-3.5" />{" "}
+                              {errors.location}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Disability Type */}
+                        <div>
+                          <label
+                            htmlFor="disabilityType"
+                            className="block text-sm font-semibold text-slate-800 mb-2"
+                          >
+                            Disability Type{" "}
+                            <span className="text-red-500">*</span>
+                          </label>
+                          <div className="relative">
+                            <Activity className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 pointer-events-none" />
+                            <input
+                              id="disabilityType"
+                              type="text"
+                              name="disabilityType"
+                              value={formData.disabilityType}
+                              onChange={handleInputChange}
+                              placeholder="Disability Type"
+                              className={`w-full pl-12 pr-4 py-3 rounded-xl border ${
+                                errors.disabilityType
+                                  ? "border-red-400 focus:outline-red-400"
+                                  : "border-slate-400 focus:outline-brand-blue"
+                              } bg-slate-50/30 text-slate-900 transition-colors`}
+                            />
+                          </div>
+                          {errors.disabilityType && (
+                            <span className="form-error-msg text-xs text-red-500 mt-1.5 flex items-center gap-1 font-medium">
+                              <AlertCircle className="w-3.5 h-3.5" />{" "}
+                              {errors.disabilityType}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Medical Condition */}
+                        <div>
+                          <label
+                            htmlFor="medicalCondition"
+                            className="block text-sm font-semibold text-slate-800 mb-2"
+                          >
+                            Medical Condition{" "}
+                            <span className="text-red-500">*</span>
+                          </label>
+                          <div className="relative">
+                            <Stethoscope className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 pointer-events-none" />
+                            <input
+                              id="medicalCondition"
+                              type="text"
+                              name="medicalCondition"
+                              value={formData.medicalCondition}
+                              onChange={handleInputChange}
+                              placeholder="Medical Condition"
+                              className={`w-full pl-12 pr-4 py-3 rounded-xl border ${
+                                errors.medicalCondition
+                                  ? "border-red-400 focus:outline-red-400"
+                                  : "border-slate-400 focus:outline-brand-blue"
+                              } bg-slate-50/30 text-slate-900 transition-colors`}
+                            />
+                          </div>
+                          {errors.medicalCondition && (
+                            <span className="form-error-msg text-xs text-red-500 mt-1.5 flex items-center gap-1 font-medium">
+                              <AlertCircle className="w-3.5 h-3.5" />{" "}
+                              {errors.medicalCondition}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* SECTION 2: Contact Details */}
+                    <div className="space-y-6 pt-4 border-t border-slate-100">
+                      <h3 className="text-lg font-heading font-bold text-slate-900 flex items-center gap-2">
+                        <span>2. Contact Information</span>
+                      </h3>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Email */}
@@ -496,7 +669,7 @@ export default function Sil_EnquiryClient({
                             htmlFor="email"
                             className="block text-sm font-semibold text-slate-800 mb-2"
                           >
-                            Your Email <span className="text-red-500">*</span>
+                            Email <span className="text-red-500">*</span>
                           </label>
                           <div className="relative">
                             <Mail className="absolute left-4 top-3.5 h-5 w-5 text-slate-400 pointer-events-none" />
@@ -506,7 +679,7 @@ export default function Sil_EnquiryClient({
                               name="email"
                               value={formData.email}
                               onChange={handleInputChange}
-                              placeholder="john.doe@example.com"
+                              placeholder="name@email.com"
                               className={`w-full pl-12 pr-4 py-3 rounded-xl border ${
                                 errors.email
                                   ? "border-red-400 focus:outline-red-400"
@@ -522,7 +695,7 @@ export default function Sil_EnquiryClient({
                           )}
                         </div>
 
-                        {/* Phone */}
+                        {/* Phone Number */}
                         <div>
                           <label
                             htmlFor="phone"
@@ -555,7 +728,7 @@ export default function Sil_EnquiryClient({
                         </div>
                       </div>
 
-                      {/* I am a... (Modern pill options instead of plain radios) */}
+                      {/* I am a... */}
                       <div>
                         <span className="block text-sm font-semibold text-slate-800 mb-3">
                           I am a... <span className="text-red-500">*</span>
@@ -583,13 +756,6 @@ export default function Sil_EnquiryClient({
                           </span>
                         )}
                       </div>
-                    </div>
-
-                    {/* SECTION 2: Referral Details */}
-                    <div className="space-y-6 pt-4 border-t border-slate-100">
-                      <h3 className="text-lg font-heading font-bold text-slate-900 flex items-center gap-2">
-                        <span>2. Referral &amp; Plan Information</span>
-                      </h3>
 
                       {/* Who are you referring? */}
                       <div>
@@ -622,13 +788,21 @@ export default function Sil_EnquiryClient({
                           </span>
                         )}
                       </div>
+                    </div>
 
-                      {/* NDIS Plan Status */}
+                    {/* SECTION 3: Funding & NDIS Plan */}
+                    <div className="space-y-6 pt-4 border-t border-slate-100">
+                      <h3 className="text-lg font-heading font-bold text-slate-900 flex items-center gap-2">
+                        <span>3. Funding &amp; NDIS Plan Information</span>
+                      </h3>
+
+                      {/* Do you have NDIS plan */}
                       <div>
                         <span className="block text-sm font-semibold text-slate-800 mb-3">
                           Do you / the individual you represent, have an NDIS
                           plan? <span className="text-red-500">*</span>
                         </span>
+
                         <div className="grid grid-cols-3 max-w-md gap-3">
                           {ndisPlanOptions.map((opt) => (
                             <button
@@ -647,9 +821,10 @@ export default function Sil_EnquiryClient({
                             </button>
                           ))}
                         </div>
+
                         {errors.hasNdisPlan && (
                           <span className="form-error-msg text-xs text-red-500 mt-2 flex items-center gap-1 font-medium">
-                            <AlertCircle className="w-3.5 h-3.5" />{" "}
+                            <AlertCircle className="w-3.5 h-3.5" />
                             {errors.hasNdisPlan}
                           </span>
                         )}
@@ -658,33 +833,42 @@ export default function Sil_EnquiryClient({
                       {/* Funding Source */}
                       <div>
                         <span className="block text-sm font-semibold text-slate-800 mb-3">
-                          What is your / their funding source?{" "}
+                          What is the funding source?{" "}
                           <span className="text-red-500">*</span>
                         </span>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                          {fundingSourceOptions.map((opt) => (
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {fundingSourceOptions.map((option) => (
                             <button
-                              key={opt}
+                              key={option}
                               type="button"
                               onClick={() =>
-                                handleSelectOption("fundingSource", opt)
+                                handleSelectOption("fundingSource", option)
                               }
-                              className={`px-4 py-3 rounded-xl text-xs sm:text-sm font-medium border text-center transition-all duration-200 cursor-pointer ${
-                                formData.fundingSource === opt
+                              className={`px-4 py-3 rounded-xl text-sm font-medium border text-left transition-all duration-200 cursor-pointer ${
+                                formData.fundingSource === option
                                   ? "border-brand-blue bg-brand-blue/5 text-brand-blue"
                                   : "border-slate-300 hover:border-slate-400 text-slate-600 bg-white"
                               }`}
                             >
-                              {opt}
+                              {option}
                             </button>
                           ))}
                         </div>
 
-                        {/* Sub-input if 'Other funding source' selected */}
+                        {errors.fundingSource && (
+                          <span className="form-error-msg text-xs text-red-500 mt-2 flex items-center gap-1 font-medium">
+                            <AlertCircle className="w-3.5 h-3.5" />
+                            {errors.fundingSource}
+                          </span>
+                        )}
+
+                        {/* Other Funding Source */}
                         {formData.fundingSource === "Other funding source" && (
                           <motion.div
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: "auto" }}
+                            transition={{ duration: 0.2 }}
                             className="mt-4"
                           >
                             <label
@@ -694,40 +878,68 @@ export default function Sil_EnquiryClient({
                               Please Specify Other Funding Source{" "}
                               <span className="text-red-500">*</span>
                             </label>
+
                             <input
                               id="otherFundingSource"
                               type="text"
                               name="otherFundingSource"
                               value={formData.otherFundingSource}
                               onChange={handleInputChange}
-                              placeholder="Detail funding scheme here..."
+                              placeholder="Please specify funding source"
                               className={`w-full px-4 py-3 rounded-xl border ${
                                 errors.otherFundingSource
                                   ? "border-red-400 focus:outline-red-400"
                                   : "border-slate-400 focus:outline-brand-blue"
                               } bg-slate-50/30 text-slate-900 transition-colors`}
                             />
+
                             {errors.otherFundingSource && (
                               <span className="form-error-msg text-xs text-red-500 mt-1.5 flex items-center gap-1 font-medium">
-                                <AlertCircle className="w-3.5 h-3.5" />{" "}
+                                <AlertCircle className="w-3.5 h-3.5" />
                                 {errors.otherFundingSource}
                               </span>
                             )}
                           </motion.div>
                         )}
-                        {errors.fundingSource && (
-                          <span className="form-error-msg text-xs text-red-500 mt-2 flex items-center gap-1 font-medium">
-                            <AlertCircle className="w-3.5 h-3.5" />{" "}
-                            {errors.fundingSource}
-                          </span>
-                        )}
+                      </div>
+
+                      {/* SDA Approved Category */}
+                      <div>
+                        <span className="block text-sm font-semibold text-slate-800 mb-1">
+                          If you require SDA, select your NDIS-approved
+                          accommodation category.
+                        </span>
+
+                        <span className="block text-xs text-slate-500 mb-3">
+                          Leave blank if you do not require Specialist
+                          Disability Accommodation.
+                        </span>
+
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                          {sdaCategoryOptions.map((opt) => (
+                            <button
+                              key={opt}
+                              type="button"
+                              onClick={() =>
+                                handleSelectOption("sdaCategory", opt)
+                              }
+                              className={`px-4 py-3 rounded-xl text-xs sm:text-sm font-medium border text-center transition-all duration-200 cursor-pointer ${
+                                formData.sdaCategory === opt
+                                  ? "border-brand-blue bg-brand-blue/5 text-brand-blue"
+                                  : "border-slate-300 hover:border-slate-400 text-slate-600 bg-white"
+                              }`}
+                            >
+                              {opt}
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     </div>
 
-                    {/* SECTION 3: Service Preferences */}
+                    {/* SECTION 4: Service Choices */}
                     <div className="space-y-6 pt-4 border-t border-slate-100">
                       <h3 className="text-lg font-heading font-bold text-slate-900 flex items-center gap-2">
-                        <span>3. Service Preferences</span>
+                        <span>4. Service Choices</span>
                       </h3>
 
                       {/* What services are you looking for? */}
@@ -737,7 +949,7 @@ export default function Sil_EnquiryClient({
                           <span className="text-red-500">*</span>
                         </span>
                         <span className="block text-xs text-slate-500 mb-4">
-                          You can tick both options if you wish.
+                          You can choose multiple options.
                         </span>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -762,6 +974,7 @@ export default function Sil_EnquiryClient({
                                     : "border-slate-300 hover:border-slate-400 bg-white"
                                 }`}
                               >
+                                {/* Checkbox */}
                                 <div
                                   className={`w-5 h-5 rounded border flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
                                     isChecked
@@ -773,12 +986,19 @@ export default function Sil_EnquiryClient({
                                     <Check className="w-3.5 h-3.5 stroke-[3]" />
                                   )}
                                 </div>
+
+                                {/* Service Details */}
                                 <div>
                                   <span
-                                    className={`block font-bold text-sm md:text-base ${isChecked ? "text-brand-blue" : "text-slate-800"}`}
+                                    className={`block font-bold text-sm md:text-base ${
+                                      isChecked
+                                        ? "text-brand-blue"
+                                        : "text-slate-800"
+                                    }`}
                                   >
                                     {service.title}
                                   </span>
+
                                   <span className="block text-xs text-slate-500 mt-1 leading-relaxed">
                                     {service.description}
                                   </span>
@@ -787,137 +1007,54 @@ export default function Sil_EnquiryClient({
                             );
                           })}
                         </div>
+
                         {errors.servicesNeeded && (
                           <span className="form-error-msg text-xs text-red-500 mt-2 flex items-center gap-1 font-medium">
-                            <AlertCircle className="w-3.5 h-3.5" />{" "}
+                            <AlertCircle className="w-3.5 h-3.5" />
                             {errors.servicesNeeded}
                           </span>
                         )}
                       </div>
 
-                      {/* Accommodation areas */}
+                      {/* Wheelchair accessible vehicle */}
                       <div>
-                        <span className="block text-sm font-semibold text-slate-800 mb-1">
-                          Where is your preferred disability accommodation area
-                          in Perth? <span className="text-red-500">*</span>
-                        </span>
-                        <span className="block text-xs text-slate-500 mb-4">
-                          You may select multiple locations.
-                        </span>
-
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                          {areaOptions.map((opt) => {
-                            const isChecked = formData.preferredAreas.includes(
-                              opt.value,
-                            );
-                            return (
-                              <button
-                                key={opt.value}
-                                type="button"
-                                onClick={() =>
-                                  handleCheckboxToggle(
-                                    "preferredAreas",
-                                    opt.value,
-                                  )
-                                }
-                                className={`p-4 rounded-xl border text-left transition-all duration-200 cursor-pointer flex items-center gap-3 ${
-                                  isChecked
-                                    ? "border-brand-blue bg-brand-blue/5"
-                                    : "border-slate-300 hover:border-slate-400 bg-white"
-                                }`}
-                              >
-                                <div
-                                  className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
-                                    isChecked
-                                      ? "bg-brand-blue border-brand-blue text-white"
-                                      : "border-slate-300 bg-white"
-                                  }`}
-                                >
-                                  {isChecked && (
-                                    <Check className="w-3 h-3 stroke-[3]" />
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <MapPin
-                                    className={`w-4 h-4 shrink-0 ${isChecked ? "text-brand-blue" : "text-slate-400"}`}
-                                  />
-                                  <span
-                                    className={`font-bold text-xs sm:text-sm ${isChecked ? "text-brand-blue" : "text-slate-700"}`}
-                                  >
-                                    {opt.label}
-                                  </span>
-                                </div>
-                              </button>
-                            );
-                          })}
-                        </div>
-                        {errors.preferredAreas && (
-                          <span className="form-error-msg text-xs text-red-500 mt-2 flex items-center gap-1 font-medium">
-                            <AlertCircle className="w-3.5 h-3.5" />{" "}
-                            {errors.preferredAreas}
+                        <span className="block text-sm font-semibold text-slate-800 mb-3 flex items-center gap-2">
+                          <Car className="w-4 h-4 text-slate-400" />
+                          <span>
+                            Is a wheelchair accessible vehicle required for
+                            community outings?
                           </span>
-                        )}
-                      </div>
-
-                      {/* SDA Home Open Tour */}
-                      <div>
-                        <span className="block text-sm font-semibold text-slate-800 mb-3">
-                          Are you interested in having a tour of a new SDA home?{" "}
-                          <span className="text-red-500">*</span>
                         </span>
-                        <div className="flex flex-col gap-3">
-                          {tourOptions.map((opt) => (
+                        <div className="grid grid-cols-2 max-w-xs gap-3">
+                          {wheelchairOptions.map((opt) => (
                             <button
                               key={opt.value}
                               type="button"
                               onClick={() =>
                                 handleSelectOption(
-                                  "interestedInTour",
+                                  "wheelchairVehicleRequired",
                                   opt.value,
                                 )
                               }
-                              className={`p-4 rounded-xl border text-left transition-all duration-200 cursor-pointer flex gap-3 items-center ${
-                                formData.interestedInTour === opt.value
-                                  ? "border-brand-blue bg-brand-blue/5"
-                                  : "border-slate-300 hover:border-slate-400 bg-white"
+                              className={`px-4 py-3 rounded-xl text-sm font-medium border text-center transition-all duration-200 cursor-pointer ${
+                                formData.wheelchairVehicleRequired === opt.value
+                                  ? "border-brand-blue bg-brand-blue/5 text-brand-blue"
+                                  : "border-slate-300 hover:border-slate-400 text-slate-600 bg-white"
                               }`}
                             >
-                              <div
-                                className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors ${
-                                  formData.interestedInTour === opt.value
-                                    ? "border-brand-blue bg-white"
-                                    : "border-slate-300 bg-white"
-                                }`}
-                              >
-                                {formData.interestedInTour === opt.value && (
-                                  <div className="w-2 h-2 rounded-full bg-brand-blue" />
-                                )}
-                              </div>
-                              <span
-                                className={`text-xs sm:text-sm font-bold ${
-                                  formData.interestedInTour === opt.value
-                                    ? "text-brand-blue"
-                                    : "text-slate-700"
-                                }`}
-                              >
-                                {opt.label}
-                              </span>
+                              {opt.label}
                             </button>
                           ))}
                         </div>
-                        {errors.interestedInTour && (
-                          <span className="form-error-msg text-xs text-red-500 mt-2 flex items-center gap-1 font-medium">
-                            <AlertCircle className="w-3.5 h-3.5" />{" "}
-                            {errors.interestedInTour}
-                          </span>
-                        )}
                       </div>
                     </div>
 
-                    {/* SECTION 4: Feedback & Additional info */}
+                    {/* SECTION 5: Origin & Comments */}
                     <div className="space-y-6 pt-4 border-t border-slate-100">
                       <h3 className="text-lg font-heading font-bold text-slate-900 flex items-center gap-2">
-                        <span>4. Referral Origin &amp; Comments</span>
+                        <span>
+                          5. Referral Origin &amp; Additional Information
+                        </span>
                       </h3>
 
                       {/* How did you hear about us */}
@@ -963,7 +1100,7 @@ export default function Sil_EnquiryClient({
                               name="otherSource"
                               value={formData.otherSource}
                               onChange={handleInputChange}
-                              placeholder="How did you hear about Affinity Care WA?"
+                              placeholder="How did you hear about us?"
                               className={`w-full px-4 py-3 rounded-xl border ${
                                 errors.otherSource
                                   ? "border-red-400 focus:outline-red-400"
@@ -986,26 +1123,21 @@ export default function Sil_EnquiryClient({
                         )}
                       </div>
 
-                      {/* Additional Comments */}
+                      {/* Additional Info / Comments */}
                       <div>
                         <label
                           htmlFor="comments"
                           className="block text-sm font-semibold text-slate-800 mb-1"
                         >
-                          Additional comments
+                          Other Information
                         </label>
-                        <span className="block text-xs text-slate-500 mb-3">
-                          This is for our NDIS Supported Independent Living
-                          (SIL) accommodation vacancies only. For career related
-                          submissions, please complete our contact form.
-                        </span>
                         <textarea
                           id="comments"
                           name="comments"
                           rows={4}
                           value={formData.comments}
                           onChange={handleInputChange}
-                          placeholder="Provide any additional details here..."
+                          placeholder="Any additional information..."
                           className="w-full px-4 py-3 rounded-xl border border-slate-400 focus:outline-brand-blue bg-slate-50/30 text-slate-900 transition-colors"
                         />
                       </div>
@@ -1014,8 +1146,8 @@ export default function Sil_EnquiryClient({
                     {/* Action Area */}
                     <div className="pt-6 border-t border-slate-300 flex flex-col sm:flex-row items-center justify-between gap-4">
                       <p className="text-xs text-slate-500">
-                        By submitting this form, you authorize our care pathway
-                        planners to contact you. Fields marked with{" "}
+                        By submitting this form, you authorize our Services
+                        Management Team to contact you. Fields marked with{" "}
                         <span className="text-red-500 font-bold">*</span> are
                         required.
                       </p>
@@ -1071,17 +1203,12 @@ export default function Sil_EnquiryClient({
                     <CheckCircle2 className="w-12 h-12 stroke-[1.5]" />
                   </div>
                   <h2 className="text-3xl font-heading font-bold text-slate-900 mb-4">
-                    Enquiry Submitted!
+                    Referral Submitted!
                   </h2>
                   <p className="text-slate-600 leading-relaxed mb-8">
-                    Thank you,{" "}
-                    <span className="font-semibold text-slate-900">
-                      {formData.firstName}
-                    </span>
-                    . Your request for NDIS Supported Independent Living (SIL)
-                    support has been successfully received. Our Participant
-                    Engagement Department will review your details and connect
-                    with you shortly.
+                    Thank you. Your referral has been successfully received. Our
+                    Services Management Team will review the participant details
+                    and connect with you shortly.
                   </p>
 
                   <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 text-left mb-8 space-y-3">
@@ -1094,12 +1221,12 @@ export default function Sil_EnquiryClient({
                         business days.
                       </li>
                       <li>
-                        We'll review vacant home compatibility in your preferred
-                        Perth areas.
+                        We'll evaluate service availability matching the
+                        specific participant goals.
                       </li>
                       <li>
-                        If requested, we will schedule a tour of one of our
-                        modern SDA properties.
+                        We'll review funding scheme alignment to guide you
+                        through care planning.
                       </li>
                     </ul>
                   </div>
@@ -1110,7 +1237,7 @@ export default function Sil_EnquiryClient({
                       variant="secondary"
                       className="w-full sm:w-auto px-6 py-3 shadow-none border border-slate-200"
                     >
-                      Submit Another Enquiry
+                      Submit Another Referral
                     </Button>
                     <Button
                       href="/"
@@ -1127,5 +1254,22 @@ export default function Sil_EnquiryClient({
         </div>
       </section>
     </div>
+  );
+}
+
+export default function ReferralsPage({
+  bannerData,
+  services,
+}: ReferralsClientProps) {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-slate-50">
+          <p className="text-slate-500 font-medium">Loading Referral Form...</p>
+        </div>
+      }
+    >
+      <ReferralsPageContent bannerData={bannerData} services={services} />
+    </Suspense>
   );
 }

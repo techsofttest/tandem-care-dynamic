@@ -29,7 +29,7 @@ interface ApiResponse {
 }
 
 async function getPageData(): Promise<ApiResponse> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/home-service`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/our-services`, {
     cache: "no-store",
   });
 

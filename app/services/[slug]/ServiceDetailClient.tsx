@@ -67,7 +67,7 @@ export default function ServiceDetailClient({
   const loadData = async () => {
     try {
       const servicesRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/home-service`,
+        `${process.env.NEXT_PUBLIC_API_URL}/our-services`,
         {
           cache: "no-store",
         },
