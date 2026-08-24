@@ -22,6 +22,22 @@ const nunito = Nunito({
 export const metadata: Metadata = {
   title: "Tandem Care | NDIS Registered Provider",
   description: "Providing the best care, personalized just for you.",
+
+  icons: {
+    icon: [
+      {
+        url: "/favicon.ico",
+        sizes: "any",
+      },
+      {
+        url: "/logo/logo1.png",
+        type: "image/png",
+        sizes: "512x512",
+      },
+    ],
+    shortcut: "/favicon.ico",
+    apple: "/logo/logo1.png",
+  },
 };
 
 export default async function RootLayout({

@@ -254,7 +254,10 @@ export default function Footer({ services, contact }: FooterProps) {
                 Contact Us
               </Link>
 
-              <Link href="#" className="block hover:underline text-gray-300">
+              <Link
+                href="/feedback"
+                className="block hover:underline text-gray-300"
+              >
                 Feedback
               </Link>
             </div>
@@ -360,11 +363,18 @@ export default function Footer({ services, contact }: FooterProps) {
 
         {/* Copyright */}
         <div className="mt-12 pt-8 border-t border-white/10 text-xs opacity-60 flex justify-center items-center gap-4">
-          <p>&copy; {currentYear} Tandem Care. All rights reserved.</p>
-          {/* <div className="flex gap-6">
-            <Link href="#">Terms & Conditions</Link>
-            <Link href="#">Privacy Policy</Link>
-          </div> */}
+          <p>
+            &copy; {currentYear} Tandem Care. All rights reserved. Webdesign
+            company{" "}
+            <a
+              href="https://techsoftweb.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white transition-colors"
+            >
+              Techsoft
+            </a>
+          </p>
         </div>
       </div>
     </footer>
