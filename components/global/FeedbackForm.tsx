@@ -132,8 +132,6 @@ export default function FeedbackForm() {
 
       const result = await response.json();
 
-      console.log("Feedback API Response:", result);
-
       if (!response.ok || !result.success) {
         throw new Error(result.message || "Something went wrong.");
       }
@@ -151,8 +149,6 @@ export default function FeedbackForm() {
         behavior: "smooth",
       });
     } catch (error) {
-      console.error("Feedback Form Error:", error);
-
       alert("Unable to submit feedback. Please try again.");
     } finally {
       setIsSubmitting(false);

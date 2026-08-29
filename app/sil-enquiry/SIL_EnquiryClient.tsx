@@ -341,8 +341,6 @@ export default function Sil_EnquiryClient({
         behavior: "smooth",
       });
     } catch (error) {
-      console.error("SIL enquiry submission error:", error);
-
       alert("Unable to submit your enquiry. Please try again later.");
     } finally {
       setIsSubmitting(false);
@@ -383,7 +381,7 @@ export default function Sil_EnquiryClient({
                       shortly.
                     </p>
 
-                    <div className="flex flex-col sm:flex-row gap-4 p-5 bg-brand-blue/5 rounded-2xl border border-brand-blue/15 text-slate-700 text-sm">
+                    {/* <div className="flex flex-col sm:flex-row gap-4 p-5 bg-brand-blue/5 rounded-2xl border border-brand-blue/15 text-slate-700 text-sm">
                       <div className="flex items-start gap-3">
                         <Info className="w-5 h-5 text-brand-blue shrink-0 mt-0.5" />
                         <div>
@@ -408,7 +406,8 @@ export default function Sil_EnquiryClient({
                           .
                         </div>
                       </div>
-                    </div>
+                    </div> */}
+                    
                   </div>
 
                   {/* Form */}

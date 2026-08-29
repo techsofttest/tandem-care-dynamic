@@ -51,8 +51,6 @@ interface FormData {
   role: string;
   referredPerson: string;
   hasNdisPlan: string;
-  fundingSource: string;
-  otherFundingSource: string;
   servicesNeeded: string[];
   wheelchairVehicleRequired: string;
   sdaCategory: string;
@@ -73,8 +71,6 @@ const INITIAL_FORM_STATE: FormData = {
   role: "",
   referredPerson: "",
   hasNdisPlan: "",
-  fundingSource: "",
-  otherFundingSource: "",
   servicesNeeded: [],
   wheelchairVehicleRequired: "",
   sdaCategory: "",
@@ -142,19 +138,6 @@ function ReferralsPageContent({ bannerData, services }: ReferralsClientProps) {
     { label: "Yes", value: "Yes" },
     { label: "No", value: "No" },
     { label: "Unsure", value: "Unsure" },
-  ];
-
-  const fundingSourceOptions = [
-    "National Disability Insurance Scheme (NDIS)",
-    "Disability Support for Older Australians (DSOA)",
-    "Insurance Commission of Western Australia (ICWA)",
-    "iCare",
-    "Funds in Court",
-    "Department of Child Protection (DCP)",
-    "Department of Communities",
-    "Private Funding",
-    "Unsure",
-    "Other funding source",
   ];
 
   const sdaCategoryOptions = [
@@ -249,14 +232,6 @@ function ReferralsPageContent({ bannerData, services }: ReferralsClientProps) {
       newErrors.referredPerson = "Please select who you are referring";
     if (!formData.hasNdisPlan)
       newErrors.hasNdisPlan = "Please select NDIS plan status";
-    if (!formData.fundingSource)
-      newErrors.fundingSource = "Please select a funding source";
-    if (
-      formData.fundingSource === "Other funding source" &&
-      !formData.otherFundingSource.trim()
-    ) {
-      newErrors.otherFundingSource = "Please detail your other funding source";
-    }
     if (formData.servicesNeeded.length === 0)
       newErrors.servicesNeeded = "Please select at least one service option";
     if (!formData.source)
@@ -284,16 +259,8 @@ function ReferralsPageContent({ bannerData, services }: ReferralsClientProps) {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    // Display form data immediately when Submit is clicked
-    console.log("========== REFERRAL FORM SUBMIT ==========");
-    console.log("Form Data:", formData);
-    console.log("Form JSON:", JSON.stringify(formData, null, 2));
-
     // Validate after logging
     if (!validateForm()) {
-      console.log("❌ Form validation failed");
-      console.log("Validation Errors:", errors);
-
       const firstErrorEl = document.querySelector(".form-error-msg");
 
       if (firstErrorEl) {
@@ -306,34 +273,22 @@ function ReferralsPageContent({ bannerData, services }: ReferralsClientProps) {
       return;
     }
 
-    console.log("✅ Form validation passed");
-
     setIsSubmitting(true);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-
-      console.log("API URL:", `${apiUrl}/referral`);
-
-      // Data that will actually be sent to Laravel
-      console.log("========== DATA SENT TO LARAVEL ==========");
-      console.log("Referral Form Data:", formData);
-      console.log("Referral Form JSON:", JSON.stringify(formData, null, 2));
-
-      const response = await fetch(`${apiUrl}/referral`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/referral`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(formData),
         },
-        body: JSON.stringify(formData),
-      });
+      );
 
       const result = await response.json();
-
-      console.log("========== LARAVEL RESPONSE ==========");
-      console.log("Status:", response.status);
-      console.log("Response:", result);
 
       if (!response.ok) {
         if (result.errors) {
@@ -351,8 +306,6 @@ function ReferralsPageContent({ bannerData, services }: ReferralsClientProps) {
         throw new Error(result.message || "Failed to submit referral.");
       }
 
-      console.log("✅ Referral submitted successfully:", result);
-
       setIsSubmitted(true);
 
       window.scrollTo({
@@ -360,8 +313,6 @@ function ReferralsPageContent({ bannerData, services }: ReferralsClientProps) {
         behavior: "smooth",
       });
     } catch (error) {
-      console.error("❌ Referral submission error:", error);
-
       alert(
         error instanceof Error
           ? error.message
@@ -791,7 +742,7 @@ function ReferralsPageContent({ bannerData, services }: ReferralsClientProps) {
                     {/* SECTION 3: Funding & NDIS Plan */}
                     <div className="space-y-6 pt-4 border-t border-slate-100">
                       <h3 className="text-lg font-heading font-bold text-slate-900 flex items-center gap-2">
-                        <span>3. Funding &amp; NDIS Plan Information</span>
+                        <span>3. NDIS Plan Information</span>
                       </h3>
 
                       {/* Do you have NDIS plan */}
@@ -825,79 +776,6 @@ function ReferralsPageContent({ bannerData, services }: ReferralsClientProps) {
                             <AlertCircle className="w-3.5 h-3.5" />
                             {errors.hasNdisPlan}
                           </span>
-                        )}
-                      </div>
-
-                      {/* Funding Source */}
-                      <div>
-                        <span className="block text-sm font-semibold text-slate-800 mb-3">
-                          What is the funding source?{" "}
-                          <span className="text-red-500">*</span>
-                        </span>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {fundingSourceOptions.map((option) => (
-                            <button
-                              key={option}
-                              type="button"
-                              onClick={() =>
-                                handleSelectOption("fundingSource", option)
-                              }
-                              className={`px-4 py-3 rounded-xl text-sm font-medium border text-left transition-all duration-200 cursor-pointer ${
-                                formData.fundingSource === option
-                                  ? "border-brand-blue bg-brand-blue/5 text-brand-blue"
-                                  : "border-slate-300 hover:border-slate-400 text-slate-600 bg-white"
-                              }`}
-                            >
-                              {option}
-                            </button>
-                          ))}
-                        </div>
-
-                        {errors.fundingSource && (
-                          <span className="form-error-msg text-xs text-red-500 mt-2 flex items-center gap-1 font-medium">
-                            <AlertCircle className="w-3.5 h-3.5" />
-                            {errors.fundingSource}
-                          </span>
-                        )}
-
-                        {/* Other Funding Source */}
-                        {formData.fundingSource === "Other funding source" && (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: "auto" }}
-                            transition={{ duration: 0.2 }}
-                            className="mt-4"
-                          >
-                            <label
-                              htmlFor="otherFundingSource"
-                              className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider"
-                            >
-                              Please Specify Other Funding Source{" "}
-                              <span className="text-red-500">*</span>
-                            </label>
-
-                            <input
-                              id="otherFundingSource"
-                              type="text"
-                              name="otherFundingSource"
-                              value={formData.otherFundingSource}
-                              onChange={handleInputChange}
-                              placeholder="Please specify funding source"
-                              className={`w-full px-4 py-3 rounded-xl border ${
-                                errors.otherFundingSource
-                                  ? "border-red-400 focus:outline-red-400"
-                                  : "border-slate-400 focus:outline-brand-blue"
-                              } bg-slate-50/30 text-slate-900 transition-colors`}
-                            />
-
-                            {errors.otherFundingSource && (
-                              <span className="form-error-msg text-xs text-red-500 mt-1.5 flex items-center gap-1 font-medium">
-                                <AlertCircle className="w-3.5 h-3.5" />
-                                {errors.otherFundingSource}
-                              </span>
-                            )}
-                          </motion.div>
                         )}
                       </div>
 
@@ -1221,10 +1099,6 @@ function ReferralsPageContent({ bannerData, services }: ReferralsClientProps) {
                       <li>
                         We'll evaluate service availability matching the
                         specific participant goals.
-                      </li>
-                      <li>
-                        We'll review funding scheme alignment to guide you
-                        through care planning.
                       </li>
                     </ul>
                   </div>

@@ -127,10 +127,6 @@ export default function ContactClient({
       message: formData.message,
     };
 
-    // Check exactly what is being sent
-    console.log("Form Data:", formData);
-    console.log("API Payload:", payload);
-
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/contact-enquiry`,
@@ -145,9 +141,6 @@ export default function ContactClient({
       );
 
       const result = await response.json();
-
-      console.log("API Status:", response.status);
-      console.log("API Response:", result);
 
       if (!response.ok || !result.success) {
         throw new Error(result.message || "Something went wrong.");
@@ -166,8 +159,6 @@ export default function ContactClient({
         behavior: "smooth",
       });
     } catch (error) {
-      console.error("Contact Form Error:", error);
-
       alert("Unable to send enquiry. Please try again.");
     } finally {
       setIsSubmitting(false);
