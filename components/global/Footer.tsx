@@ -130,7 +130,7 @@ export default function Footer({ services, contact }: FooterProps) {
     );
 
     const rVal = encodeURIComponent(roleMap[selectedRole] ?? "Other");
-    const sVal = encodeURIComponent(selected?.title ?? "");
+    const sVal = encodeURIComponent(selected?.id.toString() ?? "");
 
     router.push(`/referrals?role=${rVal}&service=${sVal}`);
   };

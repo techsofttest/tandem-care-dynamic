@@ -109,9 +109,18 @@ function ReferralsPageContent({ bannerData, services }: ReferralsClientProps) {
             updated.referredPerson = "A client / participant";
           }
         }
+
+        // Preselect service using service ID
         if (serviceParam) {
-          updated.servicesNeeded = [serviceParam];
+          const selectedService = services.find(
+            (service) => service.id.toString() === serviceParam,
+          );
+
+          if (selectedService) {
+            updated.servicesNeeded = [selectedService.id.toString()];
+          }
         }
+
         return updated;
       });
     }
