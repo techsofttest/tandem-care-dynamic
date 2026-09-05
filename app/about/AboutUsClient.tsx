@@ -2,6 +2,7 @@
 
 import { motion, Variants } from "framer-motion";
 import Image from "next/image";
+
 import {
   Target,
   Eye,
@@ -10,7 +11,10 @@ import {
   Heart,
   ShieldAlert,
   Sparkles,
+  HeartHandshake,
+  Stethoscope,
 } from "lucide-react";
+
 import PageBanner from "@/components/global/PageBanner";
 import Button from "@/components/ui/Button";
 import CtaSection from "@/components/home/CtaSection";
@@ -100,15 +104,34 @@ export default function AboutUsClient({
     },
   };
 
+  const icons = [Target, Eye, Users];
+
+  const backgrounds = [
+    "bg-[radial-gradient(ellipse_at_top_right,_rgba(53,146,207,0.10),_transparent_65%)]",
+    "bg-[radial-gradient(ellipse_at_top_right,_rgba(249,115,22,0.10),_transparent_65%)]",
+    "bg-[radial-gradient(ellipse_at_top_right,_rgba(147,51,234,0.10),_transparent_65%)]",
+  ];
+
+  const hoverBorders = [
+    "hover:border-brand-blue/30",
+    "hover:border-orange-500/30",
+    "hover:border-purple-600/30",
+  ];
+
+  const iconColors = [
+    "text-brand-blue",
+    "text-brand-orange",
+    "text-purple-600",
+  ];
+
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50/50">
+    <div className="w-screen min-h-screen flex flex-col bg-slate-50/50 overflow-x-hidden">
       {/* Header Banner */}
       <PageBanner
         title={bannerData.title}
         subtitle={bannerData.subtitle}
         breadcrumbs={[{ name: bannerData.title }]}
       />
-
       {/* Our Story Section */}
       <section className="relative py-20 lg:py-28 bg-white overflow-hidden">
         <div className="container mx-auto px-6 lg:px-20 max-w-[90rem]">
@@ -221,6 +244,114 @@ export default function AboutUsClient({
           </motion.div>
         </div>
       </section>
+
+      {/* Who We Are */}
+      <section className="py-20 lg:py-28 bg-slate-50 relative overflow-hidden">
+        <div className="container mx-auto px-6 lg:px-20 max-w-[90rem] relative z-10">
+          <motion.div variants={itemVariants} className="max-w-5xl mx-auto">
+            {/* Section Label */}
+            <div className="text-center mb-12">
+              <span className="text-xs font-bold uppercase tracking-widest text-brand-blue bg-brand-blue/10 px-3 py-1.5 rounded-full inline-block mb-5">
+                Who We Are
+              </span>
+
+              {/* Heading */}
+              <h2 className="text-3xl md:text-5xl font-heading font-bold text-slate-900 leading-tight">
+                Walking in tandem
+                <br />
+                <span className="text-brand-blue">with you.</span>
+              </h2>
+
+              {/* Description */}
+              <p className="mt-6 text-lg text-slate-600 leading-relaxed max-w-3xl mx-auto">
+                At Tandem Care, support is a partnership. We walk alongside you,
+                bringing clinical knowledge, practical support and genuine human
+                connection to every stage of your journey. Our approach is
+                centred around your goals, preferences, independence and
+                wellbeing.
+              </p>
+            </div>
+
+            {/* Mission / Vision / Values */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
+              {[
+                {
+                  title: "Our Mission",
+                  description:
+                    "Provide safe, respectful, and individualised services that help participants achieve their goals and improve their daily living.",
+                  icon: Target,
+                  iconColor: "text-brand-blue",
+                  background:
+                    "bg-[radial-gradient(ellipse_at_top_right,_rgba(53,146,207,0.12),_transparent_65%)]",
+                  hoverBorder: "hover:border-brand-blue/30",
+                },
+                {
+                  title: "Our Vision",
+                  description:
+                    "To empower NDIS participants to live safely, confidently, and independently through compassionate, high-quality, person-centred support.",
+                  icon: Eye,
+                  iconColor: "text-purple-600",
+                  background:
+                    "bg-[radial-gradient(ellipse_at_top_right,_rgba(147,51,234,0.10),_transparent_65%)]",
+                  hoverBorder: "hover:border-purple-600/30",
+                },
+                {
+                  title: "Our Values",
+                  description:
+                    "Respect, Compassion, Safety, Integrity, Excellence, Empowerment and Collaboration guide everything we do.",
+                  icon: Users,
+                  iconColor: "text-emerald-600",
+                  background:
+                    "bg-[radial-gradient(ellipse_at_top_right,_rgba(16,185,129,0.10),_transparent_65%)]",
+                  hoverBorder: "hover:border-emerald-600/30",
+                },
+              ].map((card, index) => {
+                const Icon = card.icon;
+
+                return (
+                  <motion.div
+                    key={card.title}
+                    variants={itemVariants}
+                    className={`${index < 3 ? "lg:col-span-2" : "lg:col-span-2"}
+                    ${index === 3 ? "lg:col-start-2" : ""}
+                    ${index === 4 ? "lg:col-start-4" : ""}
+                    `}
+                  >
+                    <div
+                      className={`group h-full min-h-[260px] ${card.background} bg-slate-50
+                      p-8 rounded-2xl border border-slate-200 ${card.hoverBorder}
+                      transition-all duration-300 ease-out cursor-pointer hover:-translate-y-2
+                      hover:scale-[1.02] hover:shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),_0_8px_10px_-6px_rgba(0,0,0,0.1)]
+                      `}
+                    >
+                      {/* Icon */}
+                      <div className="mb-7 inline-flex items-center justify-center">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white border border-slate-200 shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6">
+                          <Icon
+                            className={`w-7 h-7 ${card.iconColor}`}
+                            strokeWidth={2.5}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Title */}
+                      <h3 className="text-xl font-heading font-bold text-slate-900 mb-3">
+                        {card.title}
+                      </h3>
+
+                      {/* Description */}
+                      <p className="text-slate-600 leading-relaxed text-sm md:text-base">
+                        {card.description}
+                      </p>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Our Philosophy */}
       <section className="py-20 bg-white relative overflow-hidden">
         <div className="container mx-auto px-6 lg:px-20 max-w-[90rem] relative z-10">
@@ -338,6 +469,7 @@ export default function AboutUsClient({
       </section>
 
       {/* Core Pillars / Values (Tilted & Scattered Design Matching Home Page) */}
+
       <section className="w-full py-16 md:py-24 relative overflow-hidden z-10">
         <div className="container mx-auto px-6 lg:px-20 max-w-[90rem]">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
@@ -453,7 +585,6 @@ export default function AboutUsClient({
           </div>
         </div>
       </section>
-
       {/* CTA Section */}
       <CtaSection />
     </div>

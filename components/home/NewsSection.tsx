@@ -130,7 +130,10 @@ export default function NewsSection() {
   };
 
   return (
-    <section className="w-full py-24 bg-white relative overflow-hidden">
+    <section
+      id="news"
+      className="w-full py-24 bg-white relative overflow-hidden"
+    >
       <motion.div
         initial="hidden"
         whileInView="visible"

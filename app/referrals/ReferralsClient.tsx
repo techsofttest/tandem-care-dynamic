@@ -107,6 +107,10 @@ function ReferralsPageContent({ bannerData, services }: ReferralsClientProps) {
             updated.referredPerson = "My relative";
           } else if (roleParam === "Support Coordinator") {
             updated.referredPerson = "A client / participant";
+          } else if (roleParam === "Legal Guardian") {
+            updated.referredPerson = "My child";
+          } else if (roleParam === "Other") {
+            updated.referredPerson = "Other";
           }
         }
 

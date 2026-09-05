@@ -80,7 +80,7 @@ interface FooterProps {
 export default function Footer({ services, contact }: FooterProps) {
   const currentYear = new Date().getFullYear();
   const router = useRouter();
-  const [selectedRole, setSelectedRole] = useState("Participant");
+  const [selectedRole, setSelectedRole] = useState("Person with disability");
 
   const [selectedService, setSelectedService] = useState(
     services[0]?.title ?? "General Enquiries",
@@ -119,17 +119,11 @@ export default function Footer({ services, contact }: FooterProps) {
       return;
     }
 
-    const roleMap: Record<string, string> = {
-      Participant: "Person with disability",
-      "Support Coordinator": "Support Coordinator",
-      "Family Member": "Family member",
-    };
-
     const selected = services.find(
       (service) => service.title === selectedService,
     );
 
-    const rVal = encodeURIComponent(roleMap[selectedRole] ?? "Other");
+    const rVal = encodeURIComponent(selectedRole);
     const sVal = encodeURIComponent(selected?.id.toString() ?? "");
 
     router.push(`/referrals?role=${rVal}&service=${sVal}`);
@@ -278,12 +272,36 @@ export default function Footer({ services, contact }: FooterProps) {
                 onChange={(e) => setSelectedRole(e.target.value)}
                 className="w-full bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-brand-orange appearance-none font-medium cursor-pointer transition-colors hover:bg-white/10"
               >
-                <option className="bg-[#003366] text-white">Participant</option>
-                <option className="bg-[#003366] text-white">
+                <option
+                  value="Person with disability"
+                  className="bg-[#003366] text-white"
+                >
+                  Person with disability
+                </option>
+
+                <option
+                  value="Family member"
+                  className="bg-[#003366] text-white"
+                >
+                  Family member
+                </option>
+
+                <option
+                  value="Support Coordinator"
+                  className="bg-[#003366] text-white"
+                >
                   Support Coordinator
                 </option>
-                <option className="bg-[#003366] text-white">
-                  Family Member
+
+                <option
+                  value="Legal Guardian"
+                  className="bg-[#003366] text-white"
+                >
+                  Legal Guardian
+                </option>
+
+                <option value="Other" className="bg-[#003366] text-white">
+                  Other
                 </option>
               </select>
             </div>

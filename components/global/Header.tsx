@@ -240,44 +240,34 @@ export default function Header({ services = [], contact }: HeaderProps) {
                 About Us
               </Link>
 
-              <div className="group cursor-pointer py-6 flex items-center hover:text-brand-blue transition-colors">
+              <div className="group relative cursor-pointer py-6 flex items-center hover:text-brand-blue transition-colors">
                 <Link href="/services" className="flex items-center">
                   <span>Our Services</span>
                   <ChevronDown className="w-4 h-4 ml-1 stroke-[2.5]" />
                 </Link>
 
-                {/* NDIS Services Mega Menu */}
-                <div className="absolute top-[100%] left-0 w-full hidden group-hover:block z-50 whitespace-normal before:absolute before:content-[''] before:top-[-20px] before:left-0 before:right-0 before:h-[20px]">
-                  <div className="bg-white border-t border-slate-100 shadow-2xl rounded-b-3xl p-6 lg:p-8 max-h-[calc(100vh-8rem)] overflow-y-auto cursor-default">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
-                      {services.length === 0 ? (
-                        <div className="col-span-4 text-center py-6 text-slate-500">
-                          No services available.
-                        </div>
-                      ) : (
-                        services.map((service) => (
+                {/* Normal Services Dropdown */}
+                <div className="absolute top-full left-0 mt-0 w-80 hidden group-hover:block z-50">
+                  <div className="bg-white border border-slate-100 shadow-xl rounded-xl p-2">
+                    {services.length === 0 ? (
+                      <div className="text-center py-4 text-sm text-slate-500">
+                        No services available.
+                      </div>
+                    ) : (
+                      <div className="max-h-96 overflow-y-auto">
+                        {services.map((service) => (
                           <Link
                             key={service.id}
                             href={`/services/${service.slug}`}
-                            className="group/item flex items-center gap-4 p-3 rounded-2xl hover:bg-slate-50/80 transition-all duration-300 border border-transparent hover:border-slate-100"
+                            className="block px-4 py-3 rounded-lg hover:bg-slate-50 transition-colors"
                           >
-                            <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-slate-100 shrink-0 shadow-sm border border-slate-100">
-                              <Image
-                                src={service.image}
-                                alt={service.title}
-                                fill
-                                sizes="56px"
-                                className="object-cover group-hover/item:scale-110 transition-transform duration-500"
-                              />
-                            </div>
-
-                            <span className="text-sm font-bold text-slate-800 leading-snug group-hover/item:text-brand-blue transition-colors">
+                            <span className="block text-sm font-medium text-slate-700 leading-5 whitespace-normal break-words hover:text-brand-blue">
                               {service.title}
                             </span>
                           </Link>
-                        ))
-                      )}
-                    </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
